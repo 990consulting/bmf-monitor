@@ -10,9 +10,8 @@ configuration vars:
    * URLs to fetch (set up the 4 at the beginning, but would parse an infinate number until it's found empty)
  * `DATA_BUCKET`
    * s3 bucket to dump results, and used to store hashes from previous checks as well
- * `HASH_TYPE`
-   * options: md5, sha1, sha256
-
+ * `ALERT_EMAIL`
+   * receives email on success
 
 
 https://www.irs.gov/charities-non-profits/exempt-organizations-business-master-file-extract-eo-bmf
@@ -25,3 +24,4 @@ On each run:
 
   If the hash differs, refetch all the files, store in s3 bucket in timestamped directory.
   Update hash file.
+  Send notification email.
