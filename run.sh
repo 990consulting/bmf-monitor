@@ -6,6 +6,7 @@ export URL_2='https://www.irs.gov/pub/irs-soi/eo2.csv'
 export URL_3='https://www.irs.gov/pub/irs-soi/eo3.csv'
 export URL_4='https://www.irs.gov/pub/irs-soi/eo4.csv'
 export DATA_BUCKET='s3here'
+export ALERT_EMAIL='example@example.com'
 
 go fmt && go build && ./bmf-monitor
 
