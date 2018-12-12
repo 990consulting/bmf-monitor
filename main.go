@@ -8,6 +8,7 @@ import (
 
 var urls []string
 var bucket string
+var alertEmail string
 
 // Loads other configuration variables from env vars
 func loadConfig() {
@@ -19,6 +20,15 @@ func loadConfig() {
 		log.Println("DATA_BUCKET loaded as " + bucket)
 	} else {
 		log.Panicln("DATA_BUCKET not set. Exiting.")
+	}
+
+	// Verify the bucket name
+	alertEmail = os.Getenv("ALERT_EMAIL")
+
+	if len(bucket) > 0 {
+		log.Println("ALERT_EMAIL loaded as " + alertEmail)
+	} else {
+		log.Panicln("ALERT_EMAIL not set. Exiting.")
 	}
 
 }
