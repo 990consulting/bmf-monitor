@@ -1,6 +1,9 @@
 # compiled binary
 bmf-monitor
 
+# Lambda package to upload
+lambda-package.zip
+
 # nano swap files
 .*.swp
 
