@@ -62,7 +62,7 @@ func loadUrls() {
 }
 
 func main() {
-	log.Println("Starting remote file watcher")
+	log.Println("Starting file watcher")
 
 	// Logging to stdout
 	log.SetOutput(os.Stdout)
