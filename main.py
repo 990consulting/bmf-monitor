@@ -3,7 +3,7 @@
 # Loads and validates config
 def load_config():
 
-    print("Test")
+    print("Test2")
 
 
 load_config()

@@ -9,3 +9,6 @@ FROM python:3.7
 
 MAINTAINER Ben Yanke <ben@yanke.io>
 
+COPY main.py /
+
+CMD [ "python3", "/main.py" ]
