@@ -13,6 +13,7 @@ import os
 import time
 import datetime
 from email.utils import parseaddr
+# import boto3
 
 class Filefetcher:
 
@@ -146,6 +147,13 @@ class Filefetcher:
 
   # Checks all the URLs
   def loadKnownHashes(self):
+    """
+    s3 = boto3.resource('s3')
+
+    for bucket in s3.buckets.all():
+        print(bucket.name)
+    """
+
     self.logDebug("Loading previously known hashes from s3")
 
   # Checks all the URLs
@@ -161,6 +169,7 @@ def lambda_handler(event, context):
     ff = Filefetcher()
 
     # Delete the object so it starts fresh on every run
+    ff.urls = []
     del ff
 
     return {

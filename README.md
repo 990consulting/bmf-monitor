@@ -16,7 +16,7 @@ There are a number of environment variables used for configuration:
  * `DATA_BUCKET`
    * Enables verbose logging
    * required
-   * example: "TBD" 
+   * example: "TBD"
 
    TODO: Fill this example once format is decided
 
@@ -34,10 +34,12 @@ There are a number of environment variables used for configuration:
 ## IAM Role
 
 TODO : provide more info here about the IAM role policies needed to succeed
+https://docs.aws.amazon.com/lambda/latest/dg/with-s3-example.html
+
 
 ## Specifications
 
-deliverable: a developed lambda function, runnable on an automated schedule. Also full source code in client's 
+deliverable: a developed lambda function, runnable on an automated schedule. Also full source code in client's
 github account (repo @ gh:borenstein/bmf-monitor)
 
 Cost, paid at completion: $250
