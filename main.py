@@ -90,7 +90,7 @@ class Filefetcher:
   def loadConfig(self):
 
     # Check for debug mode
-    if "DEBUG" in os.environ and (os.environ['DEBUG'].lower() in ['1', 'true', 'yes']):
+    if "DEBUG" in os.environ and (os.environ['DEBUG'].lower() in ['1', 'true', 'yes', 'on']):
         self.debug = True
         self.logDebug("Debug mode enabled")
 
