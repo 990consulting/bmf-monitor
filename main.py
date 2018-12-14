@@ -152,5 +152,21 @@ class Filefetcher:
   def checkUrls(self):
      self.logDebug("Checking URLs against previously known hashes")
 
-# This is all that's needed, everything is in the constructor
-ff = Filefetcher()
+
+
+# This function called by Lambda directly
+def lambda_handler(event, context):
+
+    # This is all that's needed, everything is in the constructor
+    ff = Filefetcher()
+
+    # Delete the object so it starts fresh on every run
+    del ff
+
+    return {
+        'statusCode': 200,
+        'body': ''
+    }
+
+# This function called by CLI users
+lambda_handler(None,None)
