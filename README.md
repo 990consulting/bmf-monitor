@@ -31,6 +31,10 @@ There are a number of environment variables used for configuration:
    * example: "true"
 
 
+## IAM Role
+
+TODO : provide more info here about the IAM role policies needed to succeed
+
 ## Specifications
 
 deliverable: a developed lambda function, runnable on an automated schedule. Also full source code in client's 
