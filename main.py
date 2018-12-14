@@ -39,7 +39,8 @@ class Filefetcher:
     self.loadConfig()
     self.loadKnownHashes()
     self.checkUrls()
-    self.logDebug("Exiting successfully")
+
+    self.logInfo("Exiting successfully")
 
   ########################
   # Logging Methods
