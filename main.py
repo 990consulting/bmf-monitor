@@ -23,8 +23,8 @@ class Filefetcher:
   # URLs to check
   urls = []
 
-  # Alerting email
-  alert_email = None
+  # Alerting sns channel
+  alert_sns_channel = None
 
   # Set this to true by using env var DEBUG
   debug = None
@@ -78,16 +78,6 @@ class Filefetcher:
   # Main Methods
   ########################
 
-  # Accepts an email address as param, exits program if not valid email
-  def validateEmailOrExit(self, email):
-      success = '@' in parseaddr(email)[1]
-
-      if success:
-          self.logDebug("Email '" + email + "' was verified as a valid email")
-      else:
-          self.logFatal("Email '" + email + "' was not a valid email")
-
-
   # Loads and verifies the configuration from environment variables
   def loadConfig(self):
 
@@ -106,14 +96,13 @@ class Filefetcher:
     else:
         self.logFatal("Environment variable 'DATA_BUCKET' is not set")
 
-    # Check if ALERT_EMAIL is set
+    # Check if ALERT_SNS_CHANNEL is set
     # If not, fail to empty. Can still run without an alerting email
-    if "ALERT_EMAIL" in os.environ:
-        alert_email = os.environ['ALERT_EMAIL']
-        self.logDebug("alert_email set to '" + alert_email + "' with environment variable 'ALERT_EMAIL'")
-        self.validateEmailOrExit(alert_email)
+    if "ALERT_SNS_CHANNEL" in os.environ:
+        this.alert_sns_channel = os.environ['ALERT_SNS_CHANNEL']
+        self.logDebug("alert_sns_channel set to '" + this.alert_sns_channel + "' with environment variable 'ALERT_SNS_CHANNEL'")
     else:
-        self.logDebug("Environment variable 'ALERT_EMAIL' is not set. Defaulting to blank.")
+        self.logDebug("Environment variable 'ALERT_SNS_CHANNEL' is not set. Defaulting to blank.")
 
     # Parse in URLs
     # Read in as many as exist, but fail hard if the first is not found. Can not run with a default

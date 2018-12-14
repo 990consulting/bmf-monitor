@@ -30,6 +30,12 @@ There are a number of environment variables used for configuration:
    * default = false
    * example: "true"
 
+  * `ALERT_SNS_CHANNEL`
+    * SNS channel to send alerts to
+    * default = None
+    * example: "tbd"
+
+   TODO: Fill this example once format is decided
 
 ## IAM Role
 
@@ -49,8 +55,8 @@ configuration vars:
    * URLs to fetch (set up the 4 at the beginning, but would parse an infinate number until it's found empty)
  * `DATA_BUCKET`
    * s3 bucket to dump results, and used to store hashes from previous checks as well
- * `ALERT_EMAIL`
-   * receives email on success
+ * `ALERT_SNS_CHANNEL`
+   * SNS channel to be sent messages on changes
 
 
 https://www.irs.gov/charities-non-profits/exempt-organizations-business-master-file-extract-eo-bmf
