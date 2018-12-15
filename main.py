@@ -210,7 +210,7 @@ class Filefetcher:
             i += 1
 
             # Write hash blank for change detection
-            #url['hash_file_handle'].put(Body='')
+            url['hash_file_handle'].put(Body='')
             continue
 
         # Calculate page hash
