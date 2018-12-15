@@ -6,8 +6,10 @@ docker run \
  -e "DEBUG=1" \
  -e "ALERT_SNS_CHANNEL=jdoe@example.com" \
  -e "DATA_BUCKET=bmf-bucket" \
- -e "URL_1=http://example.com/file1.csv" \
- -e "URL_2=http://example.com/file2.csv" \
- -e "URL_3=http://example.com/file3.csv" \
+ -e "URL_1=https://benyanke.com/tmp/file1" \
+ -e "URL_2=https://benyanke.com/tmp/file2" \
+ -e "URL_3=https://benyanke.com/tmp/file3" \
+ -e "URL_4=https://benyanke.com/tmp/file4" \
+ -e "URL_5=https://benyanke.com/tmp/file5" \
  app
 

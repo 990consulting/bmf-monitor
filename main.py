@@ -15,6 +15,10 @@ import datetime
 
 import boto3
 import botocore
+import requests
+
+import hashlib
+
 # from botocore.exceptions import ClientError
 
 class Filefetcher:
@@ -47,8 +51,21 @@ class Filefetcher:
     # Setup the s3 handler
     self.s3 = boto3.resource('s3')
 
+    # Fetch past hashes for comparison to present
     self.loadKnownHashesFromS3()
+
+    # Fetch all URLs to check for change
     self.checkUrls()
+
+    # Check if pages have changed or not and handle
+    if self.havePagesChanged():
+        self.logInfo("Pages have changed - triggering change actions")
+        # Store page content to s3
+        
+    else:
+        self.logInfo("No pages have changed - no further action required")
+
+    # Store hashes
 
     self.logInfo("Exiting successfully")
 
@@ -169,14 +186,41 @@ class Filefetcher:
             url['stored_sha256'] = ''
 
         i += 1
-
-
-    self.logDebug("URL data after parsing in old state hashes: " + str(self.urls))
+    # self.logDebug("URL data after parsing in old state hashes: " + str(self.urls))
 
   # Checks all the URLs
   def checkUrls(self):
-     self.logDebug("Checking URLs against previously known hashes")
+    self.logDebug("Checking URLs against previously known hashes")
 
+    # Loop through all URLs
+    i = 1
+    for url in self.urls:
+
+        r = requests.get(url['url'], allow_redirects=True, timeout=10)
+
+        # Only continue handling if it was a 200
+        if r.status_code != 200:
+            self.logDebug("URL_" + str(i) + " returned HTTP code of " + str(r.status_code) + " - skipping")
+            continue
+
+        # URL is included in the has as well - this ensures that changing the URL triggers a rerun
+        hashContent = str(str(self.urls) + str(r.text)).encode('utf-8')
+
+        sha256 = hashlib.sha256(hashContent).hexdigest()
+        self.logDebug("URL_" + str(i) + " returned HTTP code of " + str(r.status_code))
+        self.logInfo("URL_" + str(i) + " sha256 = " + sha256)
+
+        # Store to data array
+        url['current_sha256'] = sha256
+
+        i += 1
+
+    self.logDebug("URL data after parsing in old state hashes: " + str(self.urls))
+
+    # Compares the past and current page hash to see if any pages have changed
+    # returns bool, true means pages have changed, false means pages are the same
+    def havePagesChanged(self):
+        for url in self.urls:
 
 
 # This function called by Lambda directly
