@@ -12,8 +12,10 @@
 import os
 import time
 import datetime
-from email.utils import parseaddr
+
 import boto3
+import botocore
+from botocore.exceptions import ClientError
 
 class Filefetcher:
 
@@ -98,8 +100,8 @@ class Filefetcher:
     # Check if DATA_BUCKET is set
     # If not, fail hard. Can not run with a default
     if "DATA_BUCKET" in os.environ:
-        data_bucket = os.environ['DATA_BUCKET']
-        self.logDebug("data_bucket set to '" + data_bucket + "' with environment variable 'DATA_BUCKET'")
+        self.data_bucket = os.environ['DATA_BUCKET']
+        self.logDebug("data_bucket set to '" + self.data_bucket + "' with environment variable 'DATA_BUCKET'")
     else:
         self.logFatal("Environment variable 'DATA_BUCKET' is not set")
 
@@ -143,12 +145,6 @@ class Filefetcher:
 
   # Checks all the URLs
   def loadKnownHashes(self):
-    """
-    s3 = boto3.resource('s3')
-
-    for bucket in s3.buckets.all():
-        print(bucket.name)
-    """
 
     # Loop through all URLs
     url_count = 1
@@ -157,7 +153,13 @@ class Filefetcher:
         filepath = self.bucket_path_hashes + '/url_' + str(url_count)
 
         obj = self.s3.Object(self.data_bucket, filepath)
-        obj.get()['Body'].read().decode('utf-8')
+        try:
+            data = obj.get()['Body'].read().decode('utf-8')
+            print(data)
+        except ClientError as e:
+        # except botocore.errorfactory.NoSuchKey as e:
+            self.logInfo("File " + filepath + " not found in bucket " + self.data_bucket + " - assuming blank hash")
+
 
         url_count += 1
 
