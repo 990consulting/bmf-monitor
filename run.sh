@@ -1,6 +1,7 @@
 docker build -t app . &&
 
 docker run \
+ -v "${PWD}:/app" \
  -e "DEBUG=1" \
  -e "ALERT_SNS_CHANNEL=jdoe@example.com" \
  -e "DATA_BUCKET=1" \
