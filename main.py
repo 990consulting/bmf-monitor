@@ -15,7 +15,7 @@ import datetime
 
 import boto3
 import botocore
-from botocore.exceptions import ClientError
+# from botocore.exceptions import ClientError
 
 class Filefetcher:
 
@@ -146,24 +146,31 @@ class Filefetcher:
   # Checks all the URLs
   def loadKnownHashes(self):
 
+    self.logDebug("Loading previously known hashes from s3")
+
     # Loop through all URLs
-    url_count = 1
+    i = 1
     for url in self.urls:
 
-        filepath = self.bucket_path_hashes + '/url_' + str(url_count)
+        filepath = self.bucket_path_hashes + '/url_' + str(i)
 
+        # Try/except handles when the file doesn't exist
         obj = self.s3.Object(self.data_bucket, filepath)
+
         try:
-            data = obj.get()['Body'].read().decode('utf-8')
-            print(data)
-        except ClientError as e:
-        # except botocore.errorfactory.NoSuchKey as e:
-            self.logInfo("File " + filepath + " not found in bucket " + self.data_bucket + " - assuming blank hash")
+            url['stored_sha256'] = obj.get()['Body'].read().decode('utf-8')
+            self.logInfo("File " + filepath + " found in bucket " + self.data_bucket + " - hash : " + url['stored_sha256'])
+
+        except self.s3.meta.client.exceptions.NoSuchKey:
+            # Write blank file for future writing
+            self.logInfo("File " + filepath + " not found in bucket " + self.data_bucket + " - assuming blank hash and writing blank file")
+            obj.put(Body=b'')
+            url['stored_sha256'] = ''
+
+        i += 1
 
 
-        url_count += 1
-
-    self.logDebug("Loading previously known hashes from s3")
+    print(self.urls)
 
   # Checks all the URLs
   def checkUrls(self):
