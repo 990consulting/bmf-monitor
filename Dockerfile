@@ -16,6 +16,6 @@ COPY requirements.txt /app/
 
 RUN pip install -r requirements.txt
 
-COPY main.py /app/
+COPY file.py /app/
 
-CMD [ "python3", "-u", "/app/main.py" ]
+CMD [ "python3", "-u", "/app/file.py" ]
