@@ -6,8 +6,34 @@ Designed for lambda, but can be run elsewhere. Configuration is entirely through
 An example usage might look like:
 
 ```
-DEBUG=1 ALERT_EMAIL=jdoe@example.com DATA_BUCKET=1 URL_1=http://example.com/file1.csv URL_2=http://example.com/file2.csv URL_3=http://example.com/file3.csv python3 main.py
+DEBUG=1 ALERT_SNS_CHANNEL=jdoe@example.com DATA_BUCKET=1 URL_1=http://example.com/file1.csv URL_2=http://example.com/file2.csv URL_3=http://example.com/file3.csv python3 main.py
 ```
+
+## Docker Dev and Run
+
+To build the container, run:
+
+```
+docker build -t app .
+```
+
+Rebuild should only be needed when dependencies in requirements.txt have changed.
+
+Then, to run:
+
+```
+docker run \
+ -v ${PWD}:/app \
+ -e "DEBUG=1" \
+ -e "ALERT_SNS_CHANNEL=jdoe@example.com" \
+ -e "DATA_BUCKET=1" \
+ -e "URL_1=http://example.com/file1.csv" \
+ -e "URL_2=http://example.com/file2.csv" \
+ -e "URL_3=http://example.com/file3.csv" \
+ app
+```
+
+This will set up the configuration, and with the -v command, mount the current code. Alternatively, you can omit the -v cmd, and rebuild on any code changes.
 
 ## Configuration
 
@@ -34,6 +60,9 @@ There are a number of environment variables used for configuration:
     * SNS channel to send alerts to
     * default = None
     * example: "tbd"
+
+  * `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
+    * AWS credentials if run outside lambda. Will also check ~/.aws/credentials as well
 
    TODO: Fill this example once format is decided
 

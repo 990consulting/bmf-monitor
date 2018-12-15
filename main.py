@@ -13,7 +13,7 @@ import os
 import time
 import datetime
 from email.utils import parseaddr
-# import boto3
+import boto3
 
 class Filefetcher:
 
@@ -33,11 +33,18 @@ class Filefetcher:
   bucket_path_hashes = "hashes/sha256"
   bucket_path_data = "data"
 
+  # s3 handle
+  s3 = None
+
   # Constructor
   def __init__(self):
 
     # Parses the env vars into the config vars
     self.loadConfig()
+
+    # Setup the s3 handler
+    self.s3 = boto3.resource('s3')
+
     self.loadKnownHashes()
     self.checkUrls()
 
@@ -99,8 +106,8 @@ class Filefetcher:
     # Check if ALERT_SNS_CHANNEL is set
     # If not, fail to empty. Can still run without an alerting email
     if "ALERT_SNS_CHANNEL" in os.environ:
-        this.alert_sns_channel = os.environ['ALERT_SNS_CHANNEL']
-        self.logDebug("alert_sns_channel set to '" + this.alert_sns_channel + "' with environment variable 'ALERT_SNS_CHANNEL'")
+        self.alert_sns_channel = os.environ['ALERT_SNS_CHANNEL']
+        self.logDebug("alert_sns_channel set to '" + self.alert_sns_channel + "' with environment variable 'ALERT_SNS_CHANNEL'")
     else:
         self.logDebug("Environment variable 'ALERT_SNS_CHANNEL' is not set. Defaulting to blank.")
 
@@ -142,6 +149,17 @@ class Filefetcher:
     for bucket in s3.buckets.all():
         print(bucket.name)
     """
+
+    # Loop through all URLs
+    url_count = 1
+    for url in self.urls:
+
+        filepath = self.bucket_path_hashes + '/url_' + str(url_count)
+
+        obj = self.s3.Object(self.data_bucket, filepath)
+        obj.get()['Body'].read().decode('utf-8')
+
+        url_count += 1
 
     self.logDebug("Loading previously known hashes from s3")
 
