@@ -47,7 +47,7 @@ class Filefetcher:
     # Setup the s3 handler
     self.s3 = boto3.resource('s3')
 
-    self.loadKnownHashes()
+    self.loadKnownHashesFromS3()
     self.checkUrls()
 
     self.logInfo("Exiting successfully")
@@ -143,8 +143,8 @@ class Filefetcher:
     self.logDebug("Confguration successfully loaded")
 
 
-  # Checks all the URLs
-  def loadKnownHashes(self):
+  # Loads old known hashes from s3 bucket to check for changes
+  def loadKnownHashesFromS3(self):
 
     self.logDebug("Loading previously known hashes from s3")
 
@@ -159,18 +159,19 @@ class Filefetcher:
 
         try:
             url['stored_sha256'] = obj.get()['Body'].read().decode('utf-8')
-            self.logInfo("File " + filepath + " found in bucket " + self.data_bucket + " - hash : " + url['stored_sha256'])
+            self.logDebug("File " + filepath + " found in bucket " + self.data_bucket + " - hash : " + url['stored_sha256'])
 
         except self.s3.meta.client.exceptions.NoSuchKey:
-            # Write blank file for future writing
             self.logInfo("File " + filepath + " not found in bucket " + self.data_bucket + " - assuming blank hash and writing blank file")
+            # Write blank file for future writing
             obj.put(Body=b'')
+            # Put blank value in data array to blank
             url['stored_sha256'] = ''
 
         i += 1
 
 
-    print(self.urls)
+    self.logDebug("URL data after parsing in old state hashes: " + str(self.urls))
 
   # Checks all the URLs
   def checkUrls(self):
