@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+ #!/usr/bin/env python3
 
  # =============================================================================
  #     Program:  BMF Monitor
@@ -36,7 +36,7 @@ class Filefetcher:
   debug = None
 
   # Hard coded confg options
-  bucket_path_hashes = "hashes/sha256"
+  bucket_path_hashes = "data"
   bucket_path_data = "data"
 
   # s3 handle
@@ -61,7 +61,7 @@ class Filefetcher:
     if self.havePagesChanged():
         self.logInfo("Pages have changed - triggering change actions")
         # Store page content to s3
-        
+
     else:
         self.logInfo("No pages have changed - no further action required")
 
@@ -77,7 +77,9 @@ class Filefetcher:
   def logWrite(self,level,msg):
     # Don't print debug out of debug mode
     if level is not 'debug' or self.debug:
-        print("[" + self.logTime() + "] [" + level.upper() + "] " + str(msg))
+
+        # flush=true means that the log messages are never buffered
+        print("[" + self.logTime() + "] [" + level.upper() + "] " + str(msg), flush=True)
 
   # lturn a string with the timestamp for consistent logging purposes
   def logTime(self):
@@ -159,7 +161,6 @@ class Filefetcher:
     self.logDebug(self.urls)
     self.logDebug("Confguration successfully loaded")
 
-
   # Loads old known hashes from s3 bucket to check for changes
   def loadKnownHashesFromS3(self):
 
@@ -168,20 +169,25 @@ class Filefetcher:
     # Loop through all URLs
     i = 1
     for url in self.urls:
-
-        filepath = self.bucket_path_hashes + '/url_' + str(i)
+        # Find the paths within the bucket to the files
+        hash_filepath = self.bucket_path_hashes + '/url_' + str(i) + ".sha256"
+        body_filepath = self.bucket_path_data + '/url_' + str(i) + ".txt"
 
         # Try/except handles when the file doesn't exist
-        obj = self.s3.Object(self.data_bucket, filepath)
+        # store the file handle with the URL record for later writing
+        url['hash_file_handle'] = self.s3.Object(self.data_bucket, hash_filepath)
+        url['body_file_handle'] = self.s3.Object(self.data_bucket, body_filepath)
 
         try:
-            url['stored_sha256'] = obj.get()['Body'].read().decode('utf-8')
-            self.logDebug("File " + filepath + " found in bucket " + self.data_bucket + " - hash : " + url['stored_sha256'])
+            url['stored_sha256'] = url['hash_file_handle'].get()['Body'].read().decode('utf-8')
+            self.logDebug("File " + hash_filepath + " found in bucket " + self.data_bucket + " - hash : " + url['stored_sha256'])
 
         except self.s3.meta.client.exceptions.NoSuchKey:
-            self.logInfo("File " + filepath + " not found in bucket " + self.data_bucket + " - assuming blank hash and writing blank file")
+            self.logInfo("File " + hash_filepath + " not found in bucket " + self.data_bucket + " - assuming blank hash and writing blank file")
+
             # Write blank file for future writing
-            obj.put(Body=b'')
+            url['hash_file_handle'].put(Body=b'')
+
             # Put blank value in data array to blank
             url['stored_sha256'] = ''
 
@@ -200,11 +206,15 @@ class Filefetcher:
 
         # Only continue handling if it was a 200
         if r.status_code != 200:
-            self.logDebug("URL_" + str(i) + " returned HTTP code of " + str(r.status_code) + " - skipping")
+            self.logInfo("URL_" + str(i) + " returned HTTP code of " + str(r.status_code) + " - skipping")
+            i += 1
+
+            # Write hash blank for change detection
+            #url['hash_file_handle'].put(Body='')
             continue
 
-        # URL is included in the has as well - this ensures that changing the URL triggers a rerun
-        hashContent = str(str(self.urls) + str(r.text)).encode('utf-8')
+        # Calculate page hash
+        hashContent = str(r.text).encode('utf-8')
 
         sha256 = hashlib.sha256(hashContent).hexdigest()
         self.logDebug("URL_" + str(i) + " returned HTTP code of " + str(r.status_code))
@@ -213,15 +223,31 @@ class Filefetcher:
         # Store to data array
         url['current_sha256'] = sha256
 
+        # Write hash and content to s3 bucket as well
+        url['hash_file_handle'].put(Body=sha256)
+        url['body_file_handle'].put(Body=r.text)
+
         i += 1
 
     self.logDebug("URL data after parsing in old state hashes: " + str(self.urls))
 
-    # Compares the past and current page hash to see if any pages have changed
-    # returns bool, true means pages have changed, false means pages are the same
-    def havePagesChanged(self):
-        for url in self.urls:
+  # Compares the past and current page hash to see if any pages have changed
+  # returns bool, true means pages have changed, false means pages are the same
+  def havePagesChanged(self):
 
+    # Loop throuhg all the URLs, returning as soon as the first non-match is found
+    i = 1
+    for url in self.urls:
+        self.logDebug("Checking URL_" + str(i) + " to see if changed")
+        if url['stored_sha256'] != url['current_sha256']:
+            self.logInfo("URL_" + str(i) + " changed")
+            i =+ 1
+            return True
+        else:
+            self.logDebug("URL_" + str(i) + " did not change")
+
+
+    return False
 
 # This function called by Lambda directly
 def lambda_handler(event, context):
