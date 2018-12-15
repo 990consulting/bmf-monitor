@@ -60,12 +60,10 @@ class Filefetcher:
     # Check if pages have changed or not and handle
     if self.havePagesChanged():
         self.logInfo("Pages have changed - triggering change actions")
-        # Store page content to s3
-
+        self.sendChangeAlert()
     else:
         self.logInfo("No pages have changed - no further action required")
 
-    # Store hashes
 
     self.logInfo("Exiting successfully")
 
@@ -158,7 +156,6 @@ class Filefetcher:
                 break
         i += 1
 
-    self.logDebug(self.urls)
     self.logDebug("Confguration successfully loaded")
 
   # Loads old known hashes from s3 bucket to check for changes
@@ -192,7 +189,6 @@ class Filefetcher:
             url['stored_sha256'] = ''
 
         i += 1
-    # self.logDebug("URL data after parsing in old state hashes: " + str(self.urls))
 
   # Checks all the URLs
   def checkUrls(self):
@@ -209,7 +205,8 @@ class Filefetcher:
             self.logInfo("URL_" + str(i) + " returned HTTP code of " + str(r.status_code) + " - skipping")
             i += 1
 
-            # Write hash blank for change detection
+            # Write hash blank for change detection, don't clear body so that
+            # we still have it in event of a brief client-side outage
             url['hash_file_handle'].put(Body='')
             continue
 
@@ -229,8 +226,6 @@ class Filefetcher:
 
         i += 1
 
-    self.logDebug("URL data after parsing in old state hashes: " + str(self.urls))
-
   # Compares the past and current page hash to see if any pages have changed
   # returns bool, true means pages have changed, false means pages are the same
   def havePagesChanged(self):
@@ -248,6 +243,12 @@ class Filefetcher:
 
 
     return False
+
+  # Sends a simple SNS alert message that a URL has changed
+  def sendChangeAlert(self):
+      self.logInfo("Sending alert")
+      # TODO: Implement SNS alerting here
+
 
 # This function called by Lambda directly
 def lambda_handler(event, context):
