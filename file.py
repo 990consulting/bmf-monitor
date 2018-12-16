@@ -12,7 +12,7 @@
 import os
 import time
 import datetime
-
+import json
 import boto3
 import botocore
 import requests
@@ -39,8 +39,9 @@ class Filefetcher:
   bucket_path_hashes = "data"
   bucket_path_data = "data"
 
-  # s3 handle
+  # boto client handles
   s3 = None
+  sns = None
 
   # Constructor
   def __init__(self):
@@ -50,6 +51,9 @@ class Filefetcher:
 
     # Setup the s3 handler
     self.s3 = boto3.resource('s3')
+
+    # Setup the sns handler
+    self.sns = boto3.client('sns')
 
     # Fetch past hashes for comparison to present
     self.loadKnownHashesFromS3()
@@ -247,7 +251,16 @@ class Filefetcher:
   # Sends a simple SNS alert message that a URL has changed
   def sendChangeAlert(self):
       self.logInfo("Sending alert")
-      # TODO: Implement SNS alerting here
+      # check if topic exists
+      # push to topic
+
+      message = {"msg": "One of the watched URLs changed"}
+
+      response = client.publish(
+            TargetArn=arn,
+                Message=json.dumps({'default': json.dumps(message)}),
+                    MessageStructure='json'
+                    )
 
 
 # This function called by Lambda directly
