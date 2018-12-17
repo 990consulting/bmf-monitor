@@ -36,14 +36,17 @@ class Filefetcher:
   debug = None
 
   # Hard coded confg options
-  bucket_path_hashes = "data"
-  bucket_path_data = "data"
+  bucket_path_hashes = "hashes"
+  bucket_path_data = "files"
 
   # boto client handles
   s3 = None
   sns = None
 
-  # Constructor
+  # Default region, override with env AWS_REGION
+  aws_region = 'us-east-1'
+
+# Constructor
   def __init__(self):
 
     # Parses the env vars into the config vars
@@ -53,7 +56,10 @@ class Filefetcher:
     self.s3 = boto3.resource('s3')
 
     # Setup the sns handler
-    self.sns = boto3.client('sns')
+    self.sns = boto3.client(
+        'sns',
+        region_name=self.aws_region
+    )
 
     # Fetch past hashes for comparison to present
     self.loadKnownHashesFromS3()
@@ -133,6 +139,13 @@ class Filefetcher:
         self.logDebug("alert_sns_channel set to '" + self.alert_sns_channel + "' with environment variable 'ALERT_SNS_CHANNEL'")
     else:
         self.logDebug("Environment variable 'ALERT_SNS_CHANNEL' is not set. Defaulting to blank.")
+
+
+    # Check for aws region override - default set above 
+    if "AWS_REGION" in os.environ:
+        self.aws_region = os.environ['AWS_REGION']
+
+    self.logInfo("Region set to " + self.aws_region)
 
     # Parse in URLs
     # Read in as many as exist, but fail hard if the first is not found. Can not run with a default
@@ -245,22 +258,21 @@ class Filefetcher:
         else:
             self.logDebug("URL_" + str(i) + " did not change")
 
-
     return False
 
   # Sends a simple SNS alert message that a URL has changed
   def sendChangeAlert(self):
-      self.logInfo("Sending alert")
-      # check if topic exists
-      # push to topic
+      self.logInfo("Sending modification alert")
 
-      message = {"msg": "One of the watched URLs changed"}
+      # Create the topic if it doesn't exist (this is idempotent)
+      topic = self.sns.create_topic(Name=self.alert_sns_channel)
+      topic_arn = topic['TopicArn']  # get its Amazon Resource Name
 
-      response = client.publish(
-            TargetArn=arn,
-                Message=json.dumps({'default': json.dumps(message)}),
-                    MessageStructure='json'
-                    )
+      # Publish a message.
+      self.sns.publish(
+          Message="One of the watched URLs was modified. Latest version of all files are in the s3 bucket : " + self.data_bucket, 
+          TopicArn=topic_arn
+      )
 
 
 # This function called by Lambda directly

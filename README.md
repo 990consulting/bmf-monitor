@@ -44,7 +44,10 @@ There are a number of environment variables used for configuration:
    * required
    * example: "TBD"
 
-   TODO: Fill this example once format is decided
+ * `AWS_REGION`
+   * Specifies the AWS region for SNS
+   * required, if not using US Virginia
+   * default: 'us-east-1'
 
  * `URL_1`, `URL_2`, `URL_3`, ... , `URL_n`
    * URLs to fetch. Create as many of these as needed for URLs. Will iterate over all
@@ -57,7 +60,7 @@ There are a number of environment variables used for configuration:
    * example: "true"
 
   * `ALERT_SNS_CHANNEL`
-    * SNS channel to send alerts to
+    * SNS channel to send alerts to - will create channel if not existing
     * default = None
     * example: "tbd"
 

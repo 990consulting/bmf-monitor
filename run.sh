@@ -3,7 +3,7 @@
 docker run \
  -v "${PWD}:/app" \
  -v "${HOME}/.aws/credentials:/root/.aws/credentials" \
- -e "ALERT_SNS_CHANNEL=jdoe@example.com" \
+ -e "ALERT_SNS_CHANNEL=testalerts" \
  -e "DEBUG=0" \
  -e "DATA_BUCKET=bmf-bucket" \
  -e "URL_1=https://benyanke.com/tmp/file1" \
