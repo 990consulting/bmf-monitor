@@ -282,8 +282,7 @@ def lambda_handler(event, context):
     ff = Filefetcher()
 
     # Delete the object so it starts fresh on every run
-    ff.urls = []
-    del ff
+    ff.urls.clear()
 
     return {
         'statusCode': 200,
