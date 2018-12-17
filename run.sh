@@ -1,5 +1,6 @@
 # Helper for development purposes
 
+# You don't need this line after the first run, unless dependencies change
 docker build -t app . &&
 
 docker run \
