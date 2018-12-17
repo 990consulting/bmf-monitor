@@ -16,7 +16,6 @@ import json
 import boto3
 import botocore
 import requests
-
 import hashlib
 
 # from botocore.exceptions import ClientError
