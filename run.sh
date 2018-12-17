@@ -8,7 +8,7 @@ docker run \
  -v "${HOME}/.aws/credentials:/root/.aws/credentials" \
  -e "ALERT_SNS_CHANNEL=testalerts" \
  -e "DEBUG=0" \
- -e "DATA_BUCKET=bmf-bucket" \
+ -e "DATA_BUCKET=bmf-bucket-dev" \
  -e "URL_1=https://benyanke.com/tmp/file1" \
  -e "URL_2=https://benyanke.com/tmp/file2" \
  -e "URL_3=https://benyanke.com/tmp/file3" \
