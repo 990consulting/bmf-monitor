@@ -1,4 +1,4 @@
- #!/usr/bin/env python3
+#!/usr/bin/env python3
 
  # =============================================================================
  #     Program:  BMF Monitor
@@ -257,7 +257,8 @@ class Filefetcher:
             return True
         else:
             self.logDebug("URL_" + str(i) + " did not change")
-
+        i += 1
+        
     return False
 
   # Sends a simple SNS alert message that a URL has changed
