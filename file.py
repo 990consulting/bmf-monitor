@@ -15,8 +15,8 @@ import datetime
 import json
 import boto3
 import botocore
-import requests
 import hashlib
+from botocore.vendored import requests
 
 # from botocore.exceptions import ClientError
 
