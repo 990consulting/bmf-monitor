@@ -1,4 +1,4 @@
-# docker build -t app . &&
+docker build -t app . &&
 
 docker run \
  -v "${PWD}:/app" \
