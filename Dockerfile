@@ -9,7 +9,6 @@ FROM python:3.7
 
 MAINTAINER Ben Yanke <ben@yanke.io>
 
-
 WORKDIR /app
 
 COPY requirements.txt /app/

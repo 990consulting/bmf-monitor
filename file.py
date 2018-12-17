@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
- # =============================================================================
- #     Program:  BMF Monitor
- # Description:  Checks remote file URLs and fetches them if they have changed
- #
- #      Author:  Ben Yanke <ben@benyanke.com>
- #        repo:  github:borenstein/bmf-monitor
- #
- # =============================================================================
+# =============================================================================
+#     Program:  BMF Monitor
+# Description:  Checks remote file URLs and fetches them if they have changed
+#
+#      Author:  Ben Yanke <ben@benyanke.com>
+#        repo:  github:borenstein/bmf-monitor
+#
+# =============================================================================
 
 import os
 import time
@@ -140,7 +140,7 @@ class Filefetcher:
         self.logDebug("Environment variable 'ALERT_SNS_CHANNEL' is not set. Defaulting to blank.")
 
 
-    # Check for aws region override - default set above 
+    # Check for aws region override - default set above
     if "AWS_REGION" in os.environ:
         self.aws_region = os.environ['AWS_REGION']
 
@@ -257,7 +257,7 @@ class Filefetcher:
         else:
             self.logDebug("URL_" + str(i) + " did not change")
         i += 1
-        
+
     return False
 
   # Sends a simple SNS alert message that a URL has changed
@@ -270,7 +270,7 @@ class Filefetcher:
 
       # Publish a message.
       self.sns.publish(
-          Message="One of the watched URLs was modified. Latest version of all files are in the s3 bucket : " + self.data_bucket, 
+          Message="One of the watched URLs was modified. Latest version of all files are in the s3 bucket : " + self.data_bucket,
           TopicArn=topic_arn
       )
 
@@ -287,7 +287,7 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
-        'body': ''
+        'body': 'success'
     }
 
 # This function called by CLI users
