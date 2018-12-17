@@ -1,3 +1,5 @@
+# Helper for development purposes
+
 docker build -t app . &&
 
 docker run \
