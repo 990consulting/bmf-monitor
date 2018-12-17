@@ -155,7 +155,7 @@ class Filefetcher:
     i = 1
     while True:
         varname = "URL_" + str(i)
-        if varname in os.environ:
+        if varname in os.environ and len(os.environ[varname]) > 2:
             self.urls.append({
                 "url": os.environ[varname],
                 "stored_sha256": '', # to be filled later
@@ -214,7 +214,7 @@ class Filefetcher:
     i = 1
     for url in self.urls:
 
-        r = requests.get(url['url'], allow_redirects=True, timeout=10)
+        r = requests.get(url['url'], allow_redirects=True, timeout=5)
 
         # Only continue handling if it was a 200
         if r.status_code != 200:
