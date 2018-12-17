@@ -1,12 +1,16 @@
 File Watch and Fetcher
 
+## AWS Deployment
+
+No external dependencies required. Simply upload main.py.
+
 ## Local Usage
 Designed for lambda, but can be run elsewhere. Configuration is entirely through environment variables due to being built for lambda first.
 
 An example usage might look like:
 
 ```
-DEBUG=1 ALERT_SNS_CHANNEL=jdoe@example.com DATA_BUCKET=1 URL_1=http://example.com/file1.csv URL_2=http://example.com/file2.csv URL_3=http://example.com/file3.csv python3 main.py
+DEBUG=1 ALERT_SNS_CHANNEL=alertchannel DATA_BUCKET=s3-bucket-name URL_1=http://example.com/file1.csv URL_2=http://example.com/file2.csv URL_3=http://example.com/file3.csv python3 main.py
 ```
 
 ## Docker Dev and Run
@@ -25,8 +29,8 @@ Then, to run:
 docker run \
  -v ${PWD}:/app \
  -e "DEBUG=1" \
- -e "ALERT_SNS_CHANNEL=jdoe@example.com" \
- -e "DATA_BUCKET=1" \
+ -e "ALERT_SNS_CHANNEL=test-channel" \
+ -e "DATA_BUCKET=data-bucket-s3" \
  -e "URL_1=http://example.com/file1.csv" \
  -e "URL_2=http://example.com/file2.csv" \
  -e "URL_3=http://example.com/file3.csv" \
