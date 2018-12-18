@@ -35,8 +35,8 @@ class Filefetcher:
   debug = None
 
   # Hard coded confg options
-  bucket_path_hashes = "hashes"
-  bucket_path_data = "files"
+  bucket_path_hashes = None
+  bucket_path_data = None
 
   # boto client handles
   s3 = None
@@ -60,6 +60,10 @@ class Filefetcher:
         region_name=self.aws_region
     )
 
+    # Set the bucket paths
+    self.bucket_path_hashes = "hashes"
+    self.bucket_path_data = "files/" + datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d')
+
     # Fetch past hashes for comparison to present
     self.loadKnownHashesFromS3()
 
@@ -68,8 +72,15 @@ class Filefetcher:
 
     # Check if pages have changed or not and handle
     if self.havePagesChanged():
+
+        # stores in a new timestamp directory
+        self.storeNewPageVersions()
+
         self.logInfo("Pages have changed - triggering change actions")
+
+        # Send an SNS alert
         self.sendChangeAlert()
+
     else:
         self.logInfo("No pages have changed - no further action required")
 
@@ -238,7 +249,7 @@ class Filefetcher:
 
         # Write hash and content to s3 bucket as well
         url['hash_file_handle'].put(Body=sha256)
-        url['body_file_handle'].put(Body=r.text)
+        url['content'] = r.text
 
         i += 1
 
@@ -259,6 +270,15 @@ class Filefetcher:
         i += 1
 
     return False
+
+  # Stores the page content in a new directory based on the timestamp
+  def storeNewPageVersions(self):
+      self.logInfo("Storing latest versions in a timestamped directory")
+
+      # Strore the URL content to the s3 bucket
+      for url in self.urls:
+          url['body_file_handle'].put(Body=url['content'])
+
 
   # Sends a simple SNS alert message that a URL has changed
   def sendChangeAlert(self):
