@@ -86,8 +86,6 @@ https://docs.aws.amazon.com/lambda/latest/dg/with-s3-example.html
 deliverable: a developed lambda function, runnable on an automated schedule. Also full source code in client's
 github account (repo @ gh:borenstein/bmf-monitor)
 
-Cost, paid at completion: $250
-
 configuration vars:
  * `URL_1`, `URL_2`, etc.
    * URLs to fetch (set up the 4 at the beginning, but would parse an infinate number until it's found empty)
