@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 # =============================================================================
+# Copyright (c) 2019 Applied Nonprofit Research, LLC. All rights reserved.
+#
 #     Program:  BMF Monitor
 # Description:  Checks remote file URLs and fetches them if they have changed
 #
