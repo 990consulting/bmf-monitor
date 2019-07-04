@@ -1,3 +1,5 @@
+All files in this repository are copyright (c) 2019 Applied Nonprofit Research, LLC. All rights reserved.
+
 File Watch and Fetcher
 
 ## AWS Deployment
