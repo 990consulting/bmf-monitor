@@ -6,7 +6,8 @@
 #     Program:  BMF Monitor
 # Description:  Checks remote file URLs and fetches them if they have changed
 #
-#      Author:  Ben Yanke <ben@benyanke.com>
+#     Authors:  Ben Yanke <ben@benyanke.com>,
+#               David Borenstein <david@appliednonprofitresearch.com>
 #        repo:  github:borenstein/bmf-monitor
 #
 # =============================================================================
@@ -32,6 +33,9 @@ class FileFetcher:
 
     # Set this to true by using env var DEBUG
     debug = None
+
+    # Set this to true by using env var BINARY
+    binary = None
 
     # Hard coded confg options
     bucket_path_hashes = None
@@ -60,8 +64,8 @@ class FileFetcher:
         )
 
         # Set the bucket paths
-        self.bucket_path_hashes = "hashes"
-        self.bucket_path_data = "files/" + datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d')
+        self.bucket_path_hashes = "hashes/"
+        self.bucket_path_data = "files/" + datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d') + "/"
 
         # Fetch past hashes for comparison to present
         self.load_known_hashes_from_s3()
@@ -131,6 +135,10 @@ class FileFetcher:
 
         self.log_info("Loading configuration")
 
+        if "BINARY" in os.environ and (os.environ['BINARY'].lower() in ['1', 'true', 'yes', 'on']):
+            self.binary = True
+            self.log_debug("Binary mode enabled")
+
         # Check if DATA_BUCKET is set
         # If not, fail hard. Can not run with a default
         if "DATA_BUCKET" in os.environ:
@@ -164,15 +172,18 @@ class FileFetcher:
         while True:
             varname = "URL_" + str(i)
             if varname in os.environ and len(os.environ[varname]) > 2:
+                url = os.environ[varname]
+                filename = url.split("/")[-1]
                 self.urls.append({
-                    "url": os.environ[varname],
+                    "url": url,
+                    "filename": filename,
                     "stored_sha256": '',  # to be filled later
                     "current_sha256": '',  # to be filled later
                 })
                 self.log_debug("Environment variable '" + varname + "' set to " + os.environ[varname])
             else:
                 # Hard fail if on the first loop
-                if (i == 1):
+                if i == 1:
                     self.log_fatal("URL_1 was not found - can not continue without at least one URL")
                 # Otherwise, simply exit the loop, since we've parsed all the entries
                 else:
@@ -191,8 +202,8 @@ class FileFetcher:
         i = 1
         for url in self.urls:
             # Find the paths within the bucket to the files
-            hash_filepath = self.bucket_path_hashes + '/url_' + str(i) + ".sha256"
-            body_filepath = self.bucket_path_data + '/url_' + str(i) + ".txt"
+            hash_filepath = self.bucket_path_hashes + url["filename"] + ".sha256"
+            body_filepath = self.bucket_path_data + url["filename"]
 
             # Try/except handles when the file doesn't exist
             # store the file handle with the URL record for later writing
@@ -223,7 +234,6 @@ class FileFetcher:
         # Loop through all URLs
         i = 1
         for url in self.urls:
-
             r = requests.get(url['url'], allow_redirects=True, timeout=5)
 
             # Only continue handling if it was a 200
@@ -237,9 +247,12 @@ class FileFetcher:
                 continue
 
             # Calculate page hash
-            hashContent = str(r.text).encode('utf-8')
+            if self.binary:
+                hash_content = r.content
+            else:
+                hash_content = str(r.text).encode('utf-8')
 
-            sha256 = hashlib.sha256(hashContent).hexdigest()
+            sha256 = hashlib.sha256(hash_content).hexdigest()
             self.log_debug("URL_" + str(i) + " returned HTTP code of " + str(r.status_code))
             self.log_info("URL_" + str(i) + " sha256 = " + sha256)
 
@@ -248,7 +261,7 @@ class FileFetcher:
 
             # Write hash and content to s3 bucket as well
             url['hash_file_handle'].put(Body=sha256)
-            url['content'] = r.text
+            url['content'] = hash_content
 
             i += 1
 
@@ -259,13 +272,13 @@ class FileFetcher:
         # Loop throuhg all the URLs, returning as soon as the first non-match is found
         i = 1
         for url in self.urls:
-            self.log_debug("Checking URL_" + str(i) + " to see if changed")
+            self.log_debug("Checking " + url["url"] + " to see if changed")
             if url['stored_sha256'] != url['current_sha256']:
                 self.log_info("URL_" + str(i) + " changed")
-                i = + 1
+                i += 1
                 return True
             else:
-                self.log_debug("URL_" + str(i) + " did not change")
+                self.log_debug(url["url"] + " did not change")
             i += 1
 
         return False
@@ -274,7 +287,7 @@ class FileFetcher:
     def store_new_page_versions(self):
         self.log_info("Storing latest versions in a timestamped directory")
 
-        # Strore the URL content to the s3 bucket
+        # Store the URL content to the s3 bucket
         for url in self.urls:
             url['body_file_handle'].put(Body=url['content'])
 
@@ -288,7 +301,8 @@ class FileFetcher:
 
         # Publish a message.
         self.sns.publish(
-            Message="One of the watched URLs was modified. Latest version of all files are in the s3 bucket : " + self.data_bucket,
+            Message="One of the watched URLs was modified. Latest version of all files are in the s3 bucket : "
+                    + self.data_bucket,
             TopicArn=topic_arn
         )
 
